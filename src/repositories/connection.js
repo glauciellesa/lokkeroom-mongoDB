@@ -1,17 +1,3 @@
-/* // get the client
-import mysql from "mysql2";
-
-// create the connection to database
-const connection = mysql.createConnection({
-  host: "localhost",
-  user: "root",
-  port: "3306",
-  password: "root",
-  database: "lokkeroom",
-});
-
-export default connection; */
-
 import mongoose from "mongoose";
 
 const connection = mongoose
