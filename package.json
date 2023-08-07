@@ -1,0 +1,23 @@
+{
+  "name": "lokkeroom",
+  "version": "1.0.0",
+  "description": "This is a learn repo",
+  "type": "module",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "dev": "nodemon index.js"
+  },
+  "author": "",
+  "license": "ISC",
+  "devDependencies": {
+    "nodemon": "^3.0.1"
+  },
+  "dependencies": {
+    "dotenv": "^16.3.1",
+    "express": "^4.18.2",
+    "jsonwebtoken": "^9.0.1",
+    "mongoose": "^7.4.2",
+    "mysql2": "^3.5.2",
+    "nodemon": "^3.0.1"
+  }
+}
