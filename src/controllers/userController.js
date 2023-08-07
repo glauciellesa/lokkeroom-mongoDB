@@ -2,6 +2,7 @@ import express from "express";
 import repository from "../repositories/userRepository.js";
 import jwt from "jsonwebtoken";
 import { verifyToken } from "../services/authService.js";
+import validator from "../validators/validator.js";
 
 const router = express.Router();
 
@@ -19,13 +20,17 @@ router.post("/api/register", async (req, res) => {
 });
 
 router.post("/api/login", async (req, res, next) => {
+  const user = {
+    email: req.body.email,
+    password: req.body.password,
+  };
+  if (!user.email || !user.password) {
+    return res.status(400).send({
+      message: "Email or password missing.",
+    });
+  }
+  const existUser = await repository.existUser(user);
   try {
-    const user = {
-      email: req.body.email,
-      password: req.body.password,
-    };
-    const existUser = await repository.existUser(user);
-
     if (existUser) {
       //if user log in success, generate a JWT token for the user with a secret key
       jwt.sign({ user }, "privatekey", { expiresIn: "1h" }, (err, token) => {
