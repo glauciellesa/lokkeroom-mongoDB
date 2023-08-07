@@ -32,4 +32,4 @@ const usersSchema = new Schema({
 
 const User = mongoose.model("User", usersSchema);
 
-export default { User };
+export default User;

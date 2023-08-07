@@ -1,4 +1,6 @@
+import User from "../models/User.js";
 import connection from "./connection.js";
+import bcrypt from "bcrypt";
 
 const isUserAdmin = (userId) => {
   return new Promise((resolve, reject) => {
@@ -18,57 +20,35 @@ const isUserAdmin = (userId) => {
   });
 };
 
-const getUserByEmail = (email) => {
-  return new Promise((resolve, reject) => {
-    connection.query(
-      "SELECT * FROM users WHERE email = ?",
-      [email],
-      (err, results, fields) => {
-        resolve(results[0]);
-      }
-    );
-  });
+const getUserByEmail = async (email) => {
+  return await User.findOne({ email: email }).exec();
 };
 
 const registerUser = (user) => {
-  console.log({ user });
-  return new Promise((resolve, reject) => {
-    connection.query(
-      "INSERT INTO users(first_name, last_name, email, password) VALUES (?,?,?,?)",
-      [user.first_name, user.last_name, user.email, user.password],
-      (error, results) => {
-        if (results.affectedRows > 0) {
-          resolve(results.insertId);
-        } else {
-          reject(new Error("User not registered"));
-        }
-      }
-    );
+  //.create() method returns a promise
+  return User.create({
+    first_name: user.first_name,
+    last_name: user.last_name,
+    email: user.email,
+    password: user.password,
   });
 };
 
-const existUser = (userData) => {
-  const { email } = userData;
-  const { password } = userData;
-  console.log({ email }, { password });
-  //checking to make sure the user entered the correct username/password combo
-  return new Promise((resolve, reject) => {
-    connection.query(
-      "SELECT * FROM users WHERE email = ? AND password = ?",
-      [email, password],
-      (err, results) => {
-        if (!results?.length) {
-          reject(new Error("Email or password does not exist"));
-        } else {
-          if (results.length > 0) {
-            resolve(true);
-          } else {
-            resolve(false);
-          }
-        }
-      }
-    );
-  });
+const existUser = async (userData) => {
+  const query = User.find({ email: userData.email });
+  const user = await query.exec();
+  let match = false;
+
+  if (user.length > 0) {
+    match = await bcrypt.compare(userData.password, user[0].password);
+    console.log({ match });
+  }
+
+  if (user.length > 0 && match) {
+    return true;
+  } else {
+    return false;
+  }
 };
 
 const getUsers = () => {

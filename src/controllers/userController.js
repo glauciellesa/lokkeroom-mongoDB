@@ -1,7 +1,9 @@
 import express from "express";
 import repository from "../repositories/userRepository.js";
 import jwt from "jsonwebtoken";
+import bcrypt from "bcrypt";
 import { verifyToken } from "../services/authService.js";
+import User from "../models/User.js";
 import validator from "../validators/validator.js";
 
 const router = express.Router();
@@ -11,9 +13,25 @@ const router = express.Router();
 }); */
 
 router.post("/api/register", async (req, res) => {
+  const { first_name, last_name, email, password } = req.body;
+  if (!first_name || !last_name || !email || !password)
+    return res.status(400).json({ message: " User data are required" });
+
+  const duplicate = repository.getUserByEmail(email);
+  console.log({ duplicate });
+  if (duplicate) return res.sendStatus(409); //Conflict
+
   try {
-    const id = await repository.registerUser(req.body);
-    res.status(201).location(`/api/register/${id}`).json({ id }).end();
+    //encrypt the password
+    const hashedPassword = await bcrypt.hash(password, 10);
+    const newUser = {
+      first_name,
+      last_name,
+      email,
+      password: hashedPassword,
+    };
+    const id = await repository.registerUser(newUser);
+    res.status(201).json({ id }).end();
   } catch (error) {
     res.status(404).json(error.message);
   }
@@ -24,11 +42,21 @@ router.post("/api/login", async (req, res, next) => {
     email: req.body.email,
     password: req.body.password,
   };
+
   if (!user.email || !user.password) {
     return res.status(400).send({
       message: "Email or password missing.",
     });
   }
+
+  const isValidEmail = validator.validateEmail(user.email);
+  if (!isValidEmail) {
+    return res.status(403).send({
+      //forbidden
+      message: "Email not valid.",
+    });
+  }
+
   const existUser = await repository.existUser(user);
   try {
     if (existUser) {
@@ -40,7 +68,7 @@ router.post("/api/login", async (req, res, next) => {
         res.status(200).send({ token }).end();
       });
     } else {
-      console.log("ERROR: Could not log in");
+      res.status(401).json({ ERROR: "Email or password did not exist." }); //Unautorized
     }
   } catch (error) {
     res.status(401).json(error.message);
