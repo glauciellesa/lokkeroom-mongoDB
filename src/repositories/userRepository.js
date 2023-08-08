@@ -1,32 +1,29 @@
+import Lobby from "../models/Lobby.js";
 import User from "../models/User.js";
 import connection from "./connection.js";
 import bcrypt from "bcrypt";
+import { ObjectId } from "mongodb";
 
-const isUserAdmin = (userId) => {
-  return new Promise((resolve, reject) => {
-    connection.query(
-      "SELECT r.role_name  FROM user_lobby ul  INNER  JOIN roles r ON r.id = ul.role_id WHERE ul.user_id = ?",
-      [userId],
-      (err, results, fields) => {
-        if (results[0].role_name == "coach") {
-          console.log("You are ADM");
-          resolve(true);
-        } else {
-          console.log("You are not an ADM");
-          resolve(false);
-        }
-      }
-    );
+const isUserAdmin = async (userId) => {
+  console.log({ userId });
+  const client = await Lobby.findOne({
+    "users.user_id": new ObjectId(userId),
+    "users.role": "coach",
   });
+  return !!client;
 };
 
-const getUserByEmail = async (email) => {
+const checkeIfEmailExist = async (email) => {
   const query = await User.findOne({ email: email }).exec();
   if (query) {
     return true;
   } else {
     return false;
   }
+};
+
+const getUserByEmail = async (email) => {
+  return await User.findOne({ email: email }).exec();
 };
 
 const registerUser = (user) => {
@@ -57,11 +54,7 @@ const existUser = async (userData) => {
 };
 
 const getUsers = () => {
-  return new Promise((resolve, reject) => {
-    connection.query("SELECT * FROM users", (err, results, fields) => {
-      resolve(results);
-    });
-  });
+  return User.find({});
 };
 
 const getUser = (userId) => {
@@ -143,11 +136,12 @@ const removeUserFromLobby = (lobbyId, userId) => {
 };
 
 export default {
+  isUserAdmin,
+  checkeIfEmailExist,
   getUsers,
   registerUser,
   existUser,
   getUserByEmail,
-  isUserAdmin,
   getUser,
   getUserSameLobby,
   addUserIntoLobby,

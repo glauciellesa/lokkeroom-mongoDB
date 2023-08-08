@@ -1,51 +1,36 @@
+import Lobby from "../models/Lobby.js";
 import connection from "./connection.js";
 
-const getAllLobby = () => {
-  return new Promise((resolve, reject) => {
-    connection.query("SELECT * FROM lobby", (err, results) => {
-      if (!results?.length) {
-        reject(new Error("Lobby id does not exist"));
-      } else {
-        resolve(results);
-      }
-    });
+const createNewLobby = (clientData, clientId) => {
+  //.create() method returns a promise
+  return Lobby.create({
+    lobby_name: clientData.lobby_name,
+    users: [
+      {
+        user_id: clientId,
+        role: "coach",
+      },
+    ],
+    messages: [],
   });
 };
 
-const getAllLobbyMessage = (lobbyId) => {
-  return new Promise((resolve, reject) => {
-    connection.query(
-      "SELECT * FROM user_message_lobby WHERE target_lobby_id = ?",
-      [lobbyId],
-      (err, results) => {
-        if (!results?.length) {
-          reject(new Error("Lobby id does not exist"));
-        } else {
-          resolve(results);
-        }
-      }
-    );
-  });
+const getAllLobby = async () => {
+  return await Lobby.find({});
+};
+
+const getAllLobbyMessage = async (lobbyId) => {
+  return await Lobby.findById(lobbyId);
 };
 
 const createLobbyMessage = (lobbyData, userId) => {
-  return new Promise((resolve, reject) => {
-    connection.query(
-      "INSERT INTO user_message_lobby(sender_user_id, target_lobby_id, message, create_date) VALUES (?,?,?,?)",
-      [
-        userId,
-        lobbyData.target_lobby_id,
-        lobbyData.message,
-        lobbyData.create_date,
-      ],
-      (error, results) => {
-        if (results.affectedRows > 0) {
-          resolve(results.insertId);
-        } else {
-          reject(new Error("Message was not inserted"));
-        }
-      }
-    );
+  return Lobby.create({
+    messages: [
+      {
+        sender: userId,
+        message_body: lobbyData.message,
+      },
+    ],
   });
 };
 
@@ -66,6 +51,7 @@ const getLobbyMessage = (lobbyId, messageId) => {
 };
 
 export default {
+  createNewLobby,
   getAllLobby,
   getAllLobbyMessage,
   createLobbyMessage,

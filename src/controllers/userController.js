@@ -17,7 +17,7 @@ router.post("/api/register", async (req, res) => {
   if (!first_name || !last_name || !email || !password)
     return res.status(400).json({ message: " User data are required" });
 
-  const duplicate = await repository.getUserByEmail(email);
+  const duplicate = await repository.checkeIfEmailExist(email);
   if (duplicate) return res.sendStatus(409); //Conflict
 
   try {
@@ -80,7 +80,7 @@ router.use(verifyToken);
 router.get("/api/users", async (req, res) => {
   const clienteRequestId = req.user.id;
   const isAdm = await repository.isUserAdmin(clienteRequestId);
-  console.log("req", req.user);
+  //console.log("req", req.user, { clienteRequestId });
   try {
     if (isAdm) {
       const users = await repository.getUsers(req.user.id);

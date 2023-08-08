@@ -9,6 +9,7 @@ const lobbiesSchema = Schema({
     type: String,
     trim: true,
     required: true,
+    unique: true,
     validate: [validator.isNotEmpty, "Lobby name is empty"],
   },
   users: [
@@ -22,7 +23,7 @@ const lobbiesSchema = Schema({
       },
     },
   ],
-  message: [
+  messages: [
     {
       sender: { type: mongoose.Types.ObjectId, ref: User },
       message_body: {
@@ -39,4 +40,4 @@ const lobbiesSchema = Schema({
 
 const Lobby = mongoose.model("Lobby", lobbiesSchema);
 
-export default { Lobby, Role, UserLobbyRole };
+export default Lobby;

@@ -7,22 +7,33 @@ const router = express.Router();
 //Check to make sure header is not undefined, if so, return Forbidden (403)
 router.use(verifyToken);
 
-router.get("/api/lobby", async (req, res) => {
+router.post("/api/lobby", async (req, res) => {
+  const clienteRequestId = req.user.id;
   try {
-    const lobby = await lobbyRepo.getAllLobby();
+    const lobby = await lobbyRepo.createNewLobby(req.body, clienteRequestId);
     res.status(200).json({ lobby }).end();
   } catch (error) {
     res.status(404).json(error.message);
   }
 });
 
+router.get("/api/lobby", async (req, res) => {
+  try {
+    const lobbies = await lobbyRepo.getAllLobby();
+    res.status(200).json({ lobbies }).end();
+  } catch (error) {
+    res.status(404).json(error.message); //Not Found
+  }
+});
+
 router.get("/api/lobby/:lobbyId", async (req, res) => {
   const lobbyId = req.params.lobbyId;
+
   try {
     const lobby = await lobbyRepo.getAllLobbyMessage(lobbyId);
     res.status(200).location(`/api/register/${lobbyId}`).json({ lobby }).end();
   } catch (error) {
-    res.status(404).json(error.message);
+    res.status(404).json("Id does not exist.");
   }
 });
 
