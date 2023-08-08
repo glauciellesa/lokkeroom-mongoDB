@@ -21,7 +21,12 @@ const isUserAdmin = (userId) => {
 };
 
 const getUserByEmail = async (email) => {
-  return await User.findOne({ email: email }).exec();
+  const query = await User.findOne({ email: email }).exec();
+  if (query) {
+    return true;
+  } else {
+    return false;
+  }
 };
 
 const registerUser = (user) => {

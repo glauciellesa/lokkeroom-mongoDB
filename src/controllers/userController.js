@@ -17,8 +17,7 @@ router.post("/api/register", async (req, res) => {
   if (!first_name || !last_name || !email || !password)
     return res.status(400).json({ message: " User data are required" });
 
-  const duplicate = repository.getUserByEmail(email);
-  console.log({ duplicate });
+  const duplicate = await repository.getUserByEmail(email);
   if (duplicate) return res.sendStatus(409); //Conflict
 
   try {

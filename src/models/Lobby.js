@@ -11,27 +11,32 @@ const lobbiesSchema = Schema({
     required: true,
     validate: [validator.isNotEmpty, "Lobby name is empty"],
   },
+  users: [
+    {
+      user_id: { type: mongoose.Types.ObjectId, ref: User },
+      role: {
+        type: String,
+        trim: true,
+        required: true,
+        validate: [validator.isNotEmpty, "Lobby name is empty"],
+      },
+    },
+  ],
+  message: [
+    {
+      sender: { type: mongoose.Types.ObjectId, ref: User },
+      message_body: {
+        type: String,
+        required: true,
+        trim: true,
+        validate: [validator.isNotEmpty, "Message is empty"],
+      },
+      created_at: { type: Date, default: Date.now },
+      updated_at: { type: Date, default: Date.now },
+    },
+  ],
 });
 
 const Lobby = mongoose.model("Lobby", lobbiesSchema);
-
-const rolesSchema = Schema({
-  roles_name: {
-    type: String,
-    trim: true,
-    required: true,
-    validate: [validator.isNotEmpty, "Role name is empty"],
-  },
-});
-
-const Role = mongoose.model("Role", rolesSchema);
-
-const userLobbyRoleSchema = Schema({
-  User: { type: mongoose.Types.ObjectId, ref: User },
-  Lobby: { type: mongoose.Types.ObjectId, ref: "Lobby" },
-  Role: { type: mongoose.Types.ObjectId, ref: "Role" },
-});
-
-const UserLobbyRole = mongoose.model("UserLobbyRole", userLobbyRoleSchema);
 
 export default { Lobby, Role, UserLobbyRole };

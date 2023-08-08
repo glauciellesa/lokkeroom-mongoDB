@@ -25,7 +25,8 @@ router.patch("/api/lobby/:lobbyId/message/:messageId", async (req, res) => {
   }
 });
 
-router.delete("/api/message/:messageId", async (req, res) => {
+router.delete("/api/lobby/:lobbyId/message/:messageId", async (req, res) => {
+  //é preciso saber o lobby
   const clienteRequestId = req.user.id;
   const messageId = req.params.messageId;
   const isAdm = await userRepo.isUserAdmin(clienteRequestId);
