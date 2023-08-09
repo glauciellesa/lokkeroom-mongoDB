@@ -14,11 +14,10 @@ const lobbiesSchema = Schema({
   },
   users: [
     {
-      user_id: { type: mongoose.Types.ObjectId, ref: User },
+      user_id: { type: mongoose.Types.ObjectId, ref: User, unique: true },
       role: {
         type: String,
         trim: true,
-        required: true,
         validate: [validator.isNotEmpty, "Lobby name is empty"],
       },
     },

@@ -1,16 +1,19 @@
 import Lobby from "../models/Lobby.js";
 import User from "../models/User.js";
-import connection from "./connection.js";
 import bcrypt from "bcrypt";
 import { ObjectId } from "mongodb";
 
-const isUserAdmin = async (userId) => {
-  console.log({ userId });
-  const client = await Lobby.findOne({
-    "users.user_id": new ObjectId(userId),
+const isUserCoachInLobby = async (userId, lobbyId) => {
+  const lobby = await Lobby.findOne({
+    _id: new ObjectId(lobbyId),
     "users.role": "coach",
   });
-  return !!client;
+  if (lobby) {
+    const coachUser = await lobby.users.find((user) => user.role === "coach");
+    return coachUser && coachUser.user_id.toString() === userId;
+  } else {
+    return false; // No lobby with a coach user found
+  }
 };
 
 const checkeIfEmailExist = async (email) => {
@@ -43,7 +46,6 @@ const existUser = async (userData) => {
 
   if (user.length > 0) {
     match = await bcrypt.compare(userData.password, user[0].password);
-    console.log({ match });
   }
 
   if (user.length > 0 && match) {
@@ -53,90 +55,69 @@ const existUser = async (userData) => {
   }
 };
 
-const getUsers = () => {
-  return User.find({});
+const getUsers = async () => {
+  return await User.find({});
 };
 
-const getUser = (userId) => {
-  return new Promise((resolve, reject) => {
-    connection.query(
-      "SELECT * FROM users WHERE id = ?",
-      [userId],
-      (err, results, fields) => {
-        if (results.length > 0) {
-          resolve(results);
-        } else {
-          reject(new Error("This user does not exist"));
-        }
-      }
-    );
-  });
+const getUser = async (userId) => {
+  return await User.findById(userId);
 };
 
-const getUserSameLobby = (clienteRequestId, userId) => {
-  console.log({ clienteRequestId }, { userId });
-  return new Promise((resolve, reject) => {
-    connection.query(
-      `WITH 
-      clientLobby AS (
-        SELECT ul.lobby_id FROM user_lobby ul WHERE ul.user_id = ?
-      ),
-      userLobby AS (
-        SELECT ul.lobby_id FROM user_lobby ul WHERE ul.user_id = ?
-      )
-      SELECT DISTINCT  u.* 
-      FROM users u 
-      INNER JOIN user_lobby ul ON u.id = ul.user_id 
-      WHERE ul.lobby_id IN (SELECT lobby_id FROM clientLobby)
-      AND ul.lobby_id IN (SELECT lobby_id FROM userLobby)
-      AND u.id = ?`,
-      [clienteRequestId, userId, userId],
-      (err, results) => {
-        if (results.length > 0) {
-          resolve(results);
-        } else {
-          reject(new Error("You do not have permission to see this use"));
-        }
-      }
-    );
+const getUserSameLobby = async (clientRequestId, userId, loobyId) => {
+  //clientID and userId is in the same lobby?
+  const client = await Lobby.findOne({
+    "users.user_id": new ObjectId(clientRequestId),
   });
+  const user = await Lobby.findOne({
+    "users.user_id": new ObjectId(userId),
+  });
+
+  if (client?.lobby_name === user?.lobby_name) {
+    return User.findById(userId);
+  } else {
+    return "You do not have permission to see this user";
+  }
 };
 
-const addUserIntoLobby = (lobbyId, userLobbyData) => {
-  return new Promise((resolve, reject) => {
-    connection.query(
-      "INSERT INTO user_lobby(user_id, lobby_id, role_id) VALUES (?,?,?)",
-      [userLobbyData.user_id, lobbyId, userLobbyData.role_id],
-      (err, results) => {
-        if (results.affectedRows > 0) {
-          resolve(results);
-        } else {
-          reject(new Error("User was not inserted to table user_lobby"));
-        }
-      }
+const existUserInLobby = async (lobbyId, userId) => {
+  const lobby = await Lobby.findOne({
+    _id: new ObjectId(lobbyId),
+    "users.user_id": new ObjectId(userId),
+  }).exec();
+  return !!lobby; // Return true if user exists in the lobby, false if not
+};
+
+const addUserIntoLobby = async (lobbyId, userId) => {
+  const newUser = {
+    user_id: userId.user_id,
+    role: "regular_user",
+  };
+  //check if userId already exist into the lobby
+  const existUser = await existUserInLobby(lobbyId, userId);
+
+  if (!existUser) {
+    return Lobby.findOneAndUpdate(
+      { _id: lobbyId },
+      { $push: { users: newUser } }
     );
-  });
+  } else {
+    return "This user exist already into this looby";
+  }
 };
 
 const removeUserFromLobby = (lobbyId, userId) => {
-  return new Promise((resolve, reject) => {
-    connection.query(
-      "DELETE FROM user_lobby WHERE lobby_id=? AND user_id=? ",
-      [lobbyId, userId],
-      (error, results) => {
-        if (results.affectedRows > 0) {
-          resolve(userId);
-        } else {
-          console.log(error);
-          reject(new Error("User does not exist in this Lobby"));
-        }
-      }
-    );
+  return Lobby.updateOne(
+    { _id: new ObjectId(lobbyId) },
+    { $pull: { users: { user_id: new ObjectId(userId) } } }
+  );
+  return Lobby.findOneAndDelete({
+    _id: new ObjectId(lobbyId),
+    "users.user_id": new ObjectId(userId),
   });
 };
 
 export default {
-  isUserAdmin,
+  isUserCoachInLobby,
   checkeIfEmailExist,
   getUsers,
   registerUser,

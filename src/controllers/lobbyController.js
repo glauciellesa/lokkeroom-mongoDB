@@ -26,7 +26,7 @@ router.get("/api/lobby", async (req, res) => {
   }
 });
 
-router.get("/api/lobby/:lobbyId", async (req, res) => {
+router.get("/api/lobby/:lobbyId/message", async (req, res) => {
   const lobbyId = req.params.lobbyId;
 
   try {
@@ -37,7 +37,7 @@ router.get("/api/lobby/:lobbyId", async (req, res) => {
   }
 });
 
-router.post("/api/lobby/:lobbyId", async (req, res) => {
+router.post("/api/lobby/:lobbyId/message", async (req, res) => {
   try {
     const id = await lobbyRepo.createLobbyMessage(req.body, req.user.id);
     res.status(201).json({ id }).end();

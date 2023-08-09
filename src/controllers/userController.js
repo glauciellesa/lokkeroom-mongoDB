@@ -3,7 +3,6 @@ import repository from "../repositories/userRepository.js";
 import jwt from "jsonwebtoken";
 import bcrypt from "bcrypt";
 import { verifyToken } from "../services/authService.js";
-import User from "../models/User.js";
 import validator from "../validators/validator.js";
 
 const router = express.Router();
@@ -58,7 +57,9 @@ router.post("/api/login", async (req, res, next) => {
 
   const existUser = await repository.existUser(user);
   try {
-    if (existUser) {
+    if (!existUser) {
+      res.status(401).json({ ERROR: "Email or password did not exist." }); //Unautorized
+    } else {
       //if user log in success, generate a JWT token for the user with a secret key
       jwt.sign({ user }, "privatekey", { expiresIn: "1h" }, (err, token) => {
         if (err) {
@@ -66,8 +67,6 @@ router.post("/api/login", async (req, res, next) => {
         }
         res.status(200).send({ token }).end();
       });
-    } else {
-      res.status(401).json({ ERROR: "Email or password did not exist." }); //Unautorized
     }
   } catch (error) {
     res.status(401).json(error.message);
@@ -79,33 +78,40 @@ router.use(verifyToken);
 
 router.get("/api/users", async (req, res) => {
   const clienteRequestId = req.user.id;
-  const isAdm = await repository.isUserAdmin(clienteRequestId);
-  //console.log("req", req.user, { clienteRequestId });
+  const isAdm = await repository.isUserCoachInLobby(clienteRequestId);
+  console.log({ isAdm });
   try {
     if (isAdm) {
       const users = await repository.getUsers(req.user.id);
       res.status(200).json(users).end();
     } else {
-      res.status(401).json("You dont have permission to see all users").end();
+      res.status(401).end();
     }
   } catch (error) {
     res.status(400).json(error.message);
   }
 });
 
-router.get("/api/users/:userId", async (req, res) => {
+router.get("/api/lobby/:loobyId/users/:userId", async (req, res) => {
+  const loobyId = req.params.loobyId;
   const clienteRequestId = req.user.id;
   const userId = req.params.userId;
-  const isAdm = await repository.isUserAdmin(clienteRequestId);
+
+  const isClientAcoach = await repository.isUserCoachInLobby(
+    clienteRequestId,
+    loobyId
+  );
+  console.log({ isClientAcoach });
 
   try {
-    if (isAdm) {
+    if (isClientAcoach) {
       const user = await repository.getUser(userId);
       res.status(200).json(user).end();
     } else {
       const userSameLobby = await repository.getUserSameLobby(
         clienteRequestId,
-        userId
+        userId,
+        loobyId
       );
       res.status(200).json(userSameLobby).end();
     }
@@ -114,18 +120,18 @@ router.get("/api/users/:userId", async (req, res) => {
   }
 });
 
-router.post("/api/lobby/:lobbyId/user", async (req, res) => {
+router.post("/api/lobby/:lobbyId/users", async (req, res) => {
   const lobbyId = req.params.lobbyId;
-  console.log("res", req.body);
+  const userId = req.body.users[0].user_id;
   try {
-    const userLobyId = await repository.addUserIntoLobby(lobbyId, req.body);
+    const userLobyId = await repository.addUserIntoLobby(lobbyId, userId);
     res.status(201).json({ userLobyId }).end();
   } catch (error) {
     res.status(400).json(error.message);
   }
 });
 
-router.delete("/api/lobby/:lobbyId/user/:userId", async (req, res) => {
+router.delete("/api/lobby/:lobbyId/users/:userId", async (req, res) => {
   const lobbyId = req.params.lobbyId;
   const userId = req.params.userId;
   console.log({ lobbyId }, { userId });
