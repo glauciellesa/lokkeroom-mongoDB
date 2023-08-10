@@ -38,8 +38,15 @@ router.get("/api/lobby/:lobbyId/message", async (req, res) => {
 });
 
 router.post("/api/lobby/:lobbyId/message", async (req, res) => {
+  const newMessage = req.body.messages[0]?.message_body;
+  const lobbyId = req.params.lobbyId;
+  const clientId = req.user.id;
   try {
-    const id = await lobbyRepo.createLobbyMessage(req.body, req.user.id);
+    const id = await lobbyRepo.createMessageInLobby(
+      lobbyId,
+      newMessage,
+      clientId
+    );
     res.status(201).json({ id }).end();
   } catch (error) {
     console.log({ error });

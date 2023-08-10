@@ -23,15 +23,16 @@ const getAllLobbyMessage = async (lobbyId) => {
   return await Lobby.findById(lobbyId);
 };
 
-const createLobbyMessage = (lobbyData, userId) => {
-  return Lobby.create({
-    messages: [
-      {
-        sender: userId,
-        message_body: lobbyData.message,
-      },
-    ],
-  });
+const createMessageInLobby = (lobbyId, message, clientId) => {
+  const newMessage = {
+    sender: clientId,
+    message_body: message,
+  };
+
+  return Lobby.findOneAndUpdate(
+    { _id: lobbyId },
+    { $push: { messages: newMessage } }
+  );
 };
 
 const getLobbyMessage = (lobbyId, messageId) => {
@@ -54,6 +55,6 @@ export default {
   createNewLobby,
   getAllLobby,
   getAllLobbyMessage,
-  createLobbyMessage,
+  createMessageInLobby,
   getLobbyMessage,
 };
