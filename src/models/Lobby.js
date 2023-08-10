@@ -14,7 +14,11 @@ const lobbiesSchema = Schema({
   },
   users: [
     {
-      user_id: { type: mongoose.Types.ObjectId, ref: User, unique: true },
+      user_id: {
+        type: mongoose.Types.ObjectId,
+        ref: User,
+        unique: true,
+      },
       role: {
         type: String,
         trim: true,

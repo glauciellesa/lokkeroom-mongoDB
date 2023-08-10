@@ -134,9 +134,9 @@ router.post("/api/lobby/:lobbyId/users", async (req, res) => {
 router.delete("/api/lobby/:lobbyId/users/:userId", async (req, res) => {
   const lobbyId = req.params.lobbyId;
   const userId = req.params.userId;
-  console.log({ lobbyId }, { userId });
+
   try {
-    await repository.removeUserFromLobby(lobbyId, userId);
+    const wasDeleted = await repository.removeUserFromLobby(lobbyId, userId);
     res.status(201).json(`User id:${userId} was deleted`).end();
   } catch (error) {
     res.status(400).json(error.message);

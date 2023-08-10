@@ -88,32 +88,37 @@ const existUserInLobby = async (lobbyId, userId) => {
 };
 
 const addUserIntoLobby = async (lobbyId, userId) => {
-  const newUser = {
-    user_id: userId.user_id,
-    role: "regular_user",
-  };
-  //check if userId already exist into the lobby
-  const existUser = await existUserInLobby(lobbyId, userId);
-
-  if (!existUser) {
-    return Lobby.findOneAndUpdate(
-      { _id: lobbyId },
-      { $push: { users: newUser } }
-    );
+  if (!userId) {
+    return "Type a userId";
   } else {
-    return "This user exist already into this looby";
+    const newUser = {
+      user_id: userId,
+      role: "regular_user",
+    };
+    //check if userId already exist into the lobby
+    const existUser = await existUserInLobby(lobbyId, userId);
+    console.log({ newUser });
+    if (!existUser) {
+      return Lobby.findOneAndUpdate(
+        { _id: lobbyId },
+        { $push: { users: newUser } }
+      );
+    } else {
+      return "This user exist already into this looby";
+    }
   }
 };
 
-const removeUserFromLobby = (lobbyId, userId) => {
-  return Lobby.updateOne(
-    { _id: new ObjectId(lobbyId) },
-    { $pull: { users: { user_id: new ObjectId(userId) } } }
-  );
-  return Lobby.findOneAndDelete({
-    _id: new ObjectId(lobbyId),
-    "users.user_id": new ObjectId(userId),
-  });
+const removeUserFromLobby = async (lobbyId, userId) => {
+  try {
+    const result = await Lobby.updateOne(
+      { _id: new ObjectId(lobbyId) },
+      { $pull: { users: { user_id: new ObjectId(userId) } } }
+    );
+  } catch (error) {
+    console.error("Error removing user:", error);
+    throw error;
+  }
 };
 
 export default {
