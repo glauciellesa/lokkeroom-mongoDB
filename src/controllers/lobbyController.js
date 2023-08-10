@@ -26,11 +26,11 @@ router.get("/api/lobby", async (req, res) => {
   }
 });
 
-router.get("/api/lobby/:lobbyId/message", async (req, res) => {
+router.get("/api/lobby/:lobbyId/messages", async (req, res) => {
   const lobbyId = req.params.lobbyId;
 
   try {
-    const lobby = await lobbyRepo.getAllLobbyMessage(lobbyId);
+    const lobby = await lobbyRepo.getMessagesInLobby(lobbyId);
     res.status(200).location(`/api/register/${lobbyId}`).json({ lobby }).end();
   } catch (error) {
     res.status(404).json("Id does not exist.");

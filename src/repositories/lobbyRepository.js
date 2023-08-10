@@ -19,8 +19,23 @@ const getAllLobby = async () => {
   return await Lobby.find({});
 };
 
-const getAllLobbyMessage = async (lobbyId) => {
-  return await Lobby.findById(lobbyId);
+const getMessagesInLobby = async (lobbyId) => {
+  try {
+    const lobby = await Lobby.findById(lobbyId).populate(
+      "messages.sender.first_name"
+    );
+
+    if (!lobby) {
+      console.log("Lobby not found");
+      return [];
+    }
+
+    const messages = lobby.messages;
+    return messages;
+  } catch (error) {
+    console.error("Error fetching messages:", error);
+    throw error;
+  }
 };
 
 const createMessageInLobby = (lobbyId, message, clientId) => {
@@ -54,7 +69,7 @@ const getLobbyMessage = (lobbyId, messageId) => {
 export default {
   createNewLobby,
   getAllLobby,
-  getAllLobbyMessage,
+  getMessagesInLobby,
   createMessageInLobby,
   getLobbyMessage,
 };
