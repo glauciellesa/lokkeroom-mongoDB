@@ -54,9 +54,10 @@ router.post("/api/lobby/:lobbyId/message", async (req, res) => {
   }
 });
 
-router.get("/api/lobby/:lobbyId/message/:messageId", async (req, res) => {
+router.get("/api/lobby/:lobbyId/messages/:messageId", async (req, res) => {
   const lobbyId = req.params.lobbyId;
   const messageId = req.params.messageId;
+  console.log({ lobbyId }, { messageId });
   try {
     const data = await lobbyRepo.getLobbyMessage(lobbyId, messageId);
     res.status(200).json({ data }).end();

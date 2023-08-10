@@ -1,5 +1,5 @@
+import { ObjectId } from "mongodb";
 import Lobby from "../models/Lobby.js";
-import connection from "./connection.js";
 
 const createNewLobby = (clientData, clientId) => {
   //.create() method returns a promise
@@ -50,20 +50,27 @@ const createMessageInLobby = (lobbyId, message, clientId) => {
   );
 };
 
-const getLobbyMessage = (lobbyId, messageId) => {
-  return new Promise((resolve, reject) => {
-    connection.query(
-      "SELECT * FROM user_message_lobby WHERE target_lobby_id=? and id=?",
-      [lobbyId, messageId],
-      (err, results) => {
-        if (!results?.length) {
-          reject(new Error("Lobby id does not exist"));
-        } else {
-          resolve(results);
-        }
+const getLobbyMessage = async (lobbyId, messageId) => {
+  try {
+    const lobby = await Lobby.findOne(
+      {
+        _id: new ObjectId(lobbyId),
+        "messages._id": new ObjectId(messageId),
+      },
+      {
+        "messages.$": 1, //retrieve only the matching message within the messages array.
       }
     );
-  });
+
+    if (!lobby) {
+      console.log("Lobby or message not found");
+      return null;
+    }
+    return lobby.messages[0]; // Return the specific message */
+  } catch (error) {
+    console.error("Error fetching messages:", error);
+    throw error;
+  }
 };
 
 export default {
