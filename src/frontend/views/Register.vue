@@ -5,25 +5,25 @@
       <input
         type="text"
         placeholder="First name"
-        v-model="register_form.fName"
+        v-model="registerForm.firstName"
         required
       />
       <input
         type="text"
         placeholder="Last name"
-        v-model="register_form.lName"
+        v-model="registerForm.lastName"
         required
       />
       <input
         type="email"
         placeholder="Email address"
-        v-model="register_form.email"
+        v-model="registerForm.email"
         required
       />
       <input
         type="password"
         placeholder="Password"
-        v-model="register_form.password"
+        v-model="registerForm.password"
         required
       />
       <input class="button" type="submit" value="Register" />
@@ -34,33 +34,26 @@
 
 <script>
 import { ref } from "vue";
+import service from "../services/lokkeroomService";
 
 export default {
   setup() {
-    const register_form = ref({});
+    const registerForm = ref({});
 
     const register = () => {
-      if (register_form.value) {
-        const requestOptions = {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            first_name: register_form.value.fName,
-            last_name: register_form.value.lName,
-            email: register_form.value.email,
-            password: register_form.value.password,
-          }),
+      if (registerForm.value) {
+        const newUser = {
+          firstName: registerForm.value.firstName,
+          lastName: registerForm.value.lastName,
+          email: registerForm.value.email,
+          password: registerForm.value.password,
         };
-        fetch("http://localhost:8000/api/register", requestOptions)
-          .then((response) => response.json())
-          .then((data) => {
-            console.log({ data });
-          });
+        service.addNewUser(newUser);
       }
     };
 
     return {
-      register_form,
+      registerForm,
       register,
     };
   },

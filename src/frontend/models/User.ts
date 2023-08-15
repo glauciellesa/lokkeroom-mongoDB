@@ -1,6 +1,5 @@
 export interface User {
-  fname?: string;
-  lname?: string;
+  firstName?: string;
+  lastName?: string;
   email: string;
-  password: string;
 }

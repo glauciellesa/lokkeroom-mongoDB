@@ -5,12 +5,12 @@
       <input
         type="email"
         placeholder="Email address"
-        v-model="login_form.email"
+        v-model="loginForm.email"
       />
       <input
         type="password"
         placeholder="Password"
-        v-model="login_form.password"
+        v-model="loginForm.password"
       />
       <input class="button" type="submit" value="Login" />
     </form>
@@ -23,31 +23,24 @@
 
 <script>
 import { ref } from "vue";
+import service from "../services/lokkeroomService";
 
 export default {
   setup() {
-    const login_form = ref({});
+    const loginForm = ref({});
 
     const handleLogin = () => {
-      if (login_form.value) {
-        const requestOptions = {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            email: login_form.value.email,
-            password: login_form.value.password,
-          }),
+      if (loginForm.value) {
+        const userData = {
+          email: loginForm.value.email,
+          password: loginForm.value.password,
         };
-        fetch("http://localhost:8000/api/login", requestOptions)
-          .then((response) => response.json())
-          .then((data) => {
-            console.log({ data });
-          });
+        service.getUser(userData);
       }
     };
 
     return {
-      login_form,
+      loginForm,
       handleLogin,
     };
   },
