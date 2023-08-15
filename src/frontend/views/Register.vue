@@ -36,12 +36,27 @@
 import { ref } from "vue";
 
 export default {
-  name: "Register",
   setup() {
     const register_form = ref({});
 
     const register = () => {
-      console.log(register_form);
+      if (register_form.value) {
+        const requestOptions = {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            first_name: register_form.value.fName,
+            last_name: register_form.value.lName,
+            email: register_form.value.email,
+            password: register_form.value.password,
+          }),
+        };
+        fetch("http://localhost:8000/api/register", requestOptions)
+          .then((response) => response.json())
+          .then((data) => {
+            console.log({ data });
+          });
+      }
     };
 
     return {
