@@ -1,7 +1,7 @@
 <template>
   <section class="login_container">
-    <form class="login" @submit.prevent="login">
-      <h2>Login</h2>
+    <form class="login" @submit.prevent="handleLogin">
+      <h2>Welcome Back</h2>
       <input
         type="email"
         placeholder="Email address"
@@ -14,7 +14,10 @@
       />
       <input class="button" type="submit" value="Login" />
     </form>
-    <div>Don't have an account yet? <a href="/register">Register</a></div>
+    <div>
+      Don't have an account yet?
+      <RouterLink to="/register">Register</RouterLink>
+    </div>
   </section>
 </template>
 
@@ -24,21 +27,28 @@ import { ref } from "vue";
 export default {
   setup() {
     const login_form = ref({});
-    const register_form = ref({});
 
-    const login = () => {
-      console.log(login_form);
-    };
-
-    const register = () => {
-      console.log(register_form);
+    const handleLogin = () => {
+      if (login_form.value) {
+        const requestOptions = {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            email: login_form.value.email,
+            password: login_form.value.password,
+          }),
+        };
+        fetch("http://localhost:8000/api/login", requestOptions)
+          .then((response) => response.json())
+          .then((data) => {
+            console.log({ data });
+          });
+      }
     };
 
     return {
       login_form,
-      register_form,
-      login,
-      register,
+      handleLogin,
     };
   },
 };
@@ -98,11 +108,6 @@ input:focus:not([type="submit"]) {
 
 input::placeholder {
   color: inherit;
-}
-
-form.register input:not([type="submit"]) {
-  color: #fff;
-  border-bottom: 2px solid #fff;
 }
 
 form.login input:not([type="submit"]) {

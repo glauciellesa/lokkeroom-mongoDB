@@ -6,25 +6,29 @@
         type="text"
         placeholder="First name"
         v-model="register_form.fName"
+        required
       />
       <input
         type="text"
         placeholder="Last name"
         v-model="register_form.lName"
+        required
       />
       <input
         type="email"
         placeholder="Email address"
         v-model="register_form.email"
+        required
       />
       <input
         type="password"
         placeholder="Password"
         v-model="register_form.password"
+        required
       />
       <input class="button" type="submit" value="Register" />
     </form>
-    <div>Already have an account? <a href="/">Login</a></div>
+    <div>Already have an account? <RouterLink to="/">Login</RouterLink></div>
   </section>
 </template>
 
@@ -32,22 +36,16 @@
 import { ref } from "vue";
 
 export default {
+  name: "Register",
   setup() {
-    const login_form = ref({});
     const register_form = ref({});
-
-    const login = () => {
-      console.log(login_form);
-    };
 
     const register = () => {
       console.log(register_form);
     };
 
     return {
-      login_form,
       register_form,
-      login,
       register,
     };
   },
