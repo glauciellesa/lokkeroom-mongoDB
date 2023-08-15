@@ -30,6 +30,7 @@ const getUser = (userData: RegisterForm) => {
     .then((response) => response.json())
     .then((data) => {
       console.log({ data });
+      localStorage.setItem("token", JSON.stringify(data.token));
     });
 };
 
